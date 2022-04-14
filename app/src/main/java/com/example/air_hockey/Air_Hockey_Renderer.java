@@ -40,7 +40,7 @@ import util.ShaderHelper;
 import util.TextResourceReader;
 
 public class Air_Hockey_Renderer implements GLSurfaceView.Renderer {
-    private static final int POSITION_COMPONENT_COUNT =2;
+    private static final int POSITION_COMPONENT_COUNT =4;
     private static final int BYTES_PER_FLOAT = 4;
     private final FloatBuffer vertexData;
     private final Context context;
@@ -64,30 +64,30 @@ public class Air_Hockey_Renderer implements GLSurfaceView.Renderer {
     public Air_Hockey_Renderer(Context context) {
         float[] tableVertices = {
 //triangle 1
-                -0.5f, -0.8f,0.4f, 0.4f, 0.4f,
-                0.5f,  0.8f,0.4f, 0.4f, 0.4f,
-                -0.5f,  0.8f,0.4f, 0.4f, 0.4f,
+                -0.5f, -0.8f,0.4f,0f,1f, 0.4f, 0.4f,
+                0.5f,  0.8f,0.4f,0f,2f, 0.4f, 0.4f,
+                -0.5f,  0.8f,0.4f,0f,2f, 0.4f, 0.4f,
 
-                -0.5f, -0.8f,0.4f, 0.4f, 0.4f,
-                0.5f, -0.8f,0.4f, 0.4f, 0.4f,
-                0.5f,  0.8f,0.4f, 0.4f, 0.4f,
+                -0.5f, -0.8f,0.4f,0f,1f, 0.4f, 0.4f,
+                0.5f, -0.8f,0.4f,0f,1f, 0.4f, 0.4f,
+                0.5f,  0.8f,0.4f,0f,2f, 0.4f, 0.4f,
 //triangle fan
-                0,0,1f,   1f,   1f,
-                -0.45f, -0.75f, 0.7f, 0.7f, 0.7f,
-                0f, -0.75f, 0.7f, 0.7f, 0.7f,
-                0.45f,  -0.75f,0.7f, 0.7f, 0.7f,
-                0.45f,  0f,0.7f, 0.7f, 0.7f,
-                0.45f,  0.75f,0.7f, 0.7f, 0.7f,
-                0f,  0.75f,0.7f, 0.7f, 0.7f,
-                -0.45f, 0.75f,0.7f, 0.7f, 0.7f,
-                -0.45f, 0f,0.7f, 0.7f, 0.7f,
-                -0.45f, -0.75f,0.7f, 0.7f, 0.7f,
+                0,0, 0f,1.5f,1f,   1f,1f,
+                -0.45f, -0.75f, 0f,1f,0.7f, 0.7f,0.7f,
+                0f, -0.75f,  0f,1f,0.7f, 0.7f,0.7f,
+                0.45f,  -0.75f, 0f,1f,0.7f, 0.7f,0.7f,
+                0.45f,  0f, 0f,1.5f,0.7f, 0.7f,0.7f,
+                0.45f,  0.75f, 0f,2f,0.7f, 0.7f,0.7f,
+                0f,  0.75f, 0f,2f,0.7f, 0.7f,0.7f,
+                -0.45f, 0.75f, 0f,2f,0.7f, 0.7f,0.7f,
+                -0.45f, 0f,0f,1.5f, 0.7f, 0.7f,0.7f,
+                -0.45f, -0.75f, 0f,1f,0.7f, 0.7f,0.7f,
 // Line 1
-                -0.5f, 0f, 1f, 0f, 0f,
-                0.5f, 0f, 1f, 0f, 0f,
+                -0.5f, 0f, 1f, 0f,1.5f, 0f, 0f,
+                0.5f, 0f, 1f, 0f,1.5f, 0f, 0f,
 // Mallets
-                0f, -0.5f, 0f, 0f, 1f,
-                0f,  0.5f, 1f, 0f, 0f,
+                0f, -0.5f,0f,1f, 0f, 0f, 1f,
+                0f,  0.5f, 0f,2f, 1f, 0f, 0f,
 
         };
 
