@@ -64,30 +64,30 @@ public class Air_Hockey_Renderer implements GLSurfaceView.Renderer {
     public Air_Hockey_Renderer(Context context) {
         float[] tableVertices = {
 //triangle 1
-                -0.5f, -0.5f,0.4f, 0.4f, 0.4f,
-                0.5f,  0.5f,0.4f, 0.4f, 0.4f,
-                -0.5f,  0.5f,0.4f, 0.4f, 0.4f,
+                -0.5f, -0.8f,0.4f, 0.4f, 0.4f,
+                0.5f,  0.8f,0.4f, 0.4f, 0.4f,
+                -0.5f,  0.8f,0.4f, 0.4f, 0.4f,
 
-                -0.5f, -0.5f,0.4f, 0.4f, 0.4f,
-                0.5f, -0.5f,0.4f, 0.4f, 0.4f,
-                0.5f,  0.5f,0.4f, 0.4f, 0.4f,
+                -0.5f, -0.8f,0.4f, 0.4f, 0.4f,
+                0.5f, -0.8f,0.4f, 0.4f, 0.4f,
+                0.5f,  0.8f,0.4f, 0.4f, 0.4f,
 //triangle fan
                 0,0,1f,   1f,   1f,
-                -0.45f, -0.45f, 0.7f, 0.7f, 0.7f,
-                0f, -0.45f, 0.7f, 0.7f, 0.7f,
-                0.45f,  -0.45f,0.7f, 0.7f, 0.7f,
+                -0.45f, -0.75f, 0.7f, 0.7f, 0.7f,
+                0f, -0.75f, 0.7f, 0.7f, 0.7f,
+                0.45f,  -0.75f,0.7f, 0.7f, 0.7f,
                 0.45f,  0f,0.7f, 0.7f, 0.7f,
-                0.45f,  0.45f,0.7f, 0.7f, 0.7f,
-                0f,  0.45f,0.7f, 0.7f, 0.7f,
-                -0.45f, 0.45f,0.7f, 0.7f, 0.7f,
+                0.45f,  0.75f,0.7f, 0.7f, 0.7f,
+                0f,  0.75f,0.7f, 0.7f, 0.7f,
+                -0.45f, 0.75f,0.7f, 0.7f, 0.7f,
                 -0.45f, 0f,0.7f, 0.7f, 0.7f,
-                -0.45f, -0.45f,0.7f, 0.7f, 0.7f,
+                -0.45f, -0.75f,0.7f, 0.7f, 0.7f,
 // Line 1
                 -0.5f, 0f, 1f, 0f, 0f,
                 0.5f, 0f, 1f, 0f, 0f,
 // Mallets
-                0f, -0.25f, 0f, 0f, 1f,
-                0f,  0.25f, 1f, 0f, 0f,
+                0f, -0.5f, 0f, 0f, 1f,
+                0f,  0.5f, 1f, 0f, 0f,
 
         };
 
@@ -131,9 +131,9 @@ public class Air_Hockey_Renderer implements GLSurfaceView.Renderer {
         glViewport(0,0,width,height);
         final float aspectRatio = width > height ? (float) width / (float) height : (float) height / (float) width;
         if (width > height) { // Landscape
-            orthoM(projectionMatrix, 0, -aspectRatio, aspectRatio, -1f, 1f, -1f, 1f); } else {
+            orthoM(projectionMatrix, 0, -aspectRatio, aspectRatio, -0.8f, 0.8f, -1f, 1f); } else {
             // Portrait or square
-            orthoM(projectionMatrix, 0, -1f, 1f, -aspectRatio, aspectRatio, -1f, 1f);
+            orthoM(projectionMatrix, 0, -0.5f, 0.5f, -aspectRatio/2, aspectRatio/2, -1f, 1f);
         }
     }
 
