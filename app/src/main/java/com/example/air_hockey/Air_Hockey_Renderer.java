@@ -13,8 +13,10 @@ import static android.opengl.GLES20.glEnableVertexAttribArray;
 import static android.opengl.GLES20.glGetAttribLocation;
 import static android.opengl.GLES20.glGetUniformLocation;
 import static android.opengl.GLES20.glUniform4f;
+import static android.opengl.GLES20.glUniformMatrix4fv;
 import static android.opengl.GLES20.glUseProgram;
 import static android.opengl.GLES20.glVertexAttribPointer;
+import static android.opengl.Matrix.orthoM;
 
 import static javax.microedition.khronos.opengles.GL10.GL_LINES;
 import static javax.microedition.khronos.opengles.GL10.GL_POINTS;
@@ -54,6 +56,10 @@ public class Air_Hockey_Renderer implements GLSurfaceView.Renderer {
             (POSITION_COMPONENT_COUNT + COLOR_COMPONENT_COUNT) * BYTES_PER_FLOAT;
     private int aColorLocation;
 
+    private static final String U_MATRIX = "u_Matrix";
+    private final float[] projectionMatrix = new float[16];
+    private int uMatrixLocation;
+
 
     public Air_Hockey_Renderer(Context context) {
         float[] tableVertices = {
@@ -68,9 +74,13 @@ public class Air_Hockey_Renderer implements GLSurfaceView.Renderer {
 //triangle fan
                 0,0,1f,   1f,   1f,
                 -0.45f, -0.45f, 0.7f, 0.7f, 0.7f,
+                0f, -0.45f, 0.7f, 0.7f, 0.7f,
                 0.45f,  -0.45f,0.7f, 0.7f, 0.7f,
+                0.45f,  0f,0.7f, 0.7f, 0.7f,
                 0.45f,  0.45f,0.7f, 0.7f, 0.7f,
+                0f,  0.45f,0.7f, 0.7f, 0.7f,
                 -0.45f, 0.45f,0.7f, 0.7f, 0.7f,
+                -0.45f, 0f,0.7f, 0.7f, 0.7f,
                 -0.45f, -0.45f,0.7f, 0.7f, 0.7f,
 // Line 1
                 -0.5f, 0f, 1f, 0f, 0f,
@@ -112,20 +122,29 @@ public class Air_Hockey_Renderer implements GLSurfaceView.Renderer {
         vertexData.position(POSITION_COMPONENT_COUNT);
         glVertexAttribPointer(aColorLocation,COLOR_COMPONENT_COUNT,GL_FLOAT,false,STRIDE,vertexData);
         glEnableVertexAttribArray(aColorLocation);
+
+        uMatrixLocation = glGetUniformLocation(program, U_MATRIX);
     }
 
     @Override
-    public void onSurfaceChanged(GL10 gl10, int i, int i1) {
-        glViewport(0,0,i,i1);
+    public void onSurfaceChanged(GL10 gl10, int width, int height) {
+        glViewport(0,0,width,height);
+        final float aspectRatio = width > height ? (float) width / (float) height : (float) height / (float) width;
+        if (width > height) { // Landscape
+            orthoM(projectionMatrix, 0, -aspectRatio, aspectRatio, -1f, 1f, -1f, 1f); } else {
+            // Portrait or square
+            orthoM(projectionMatrix, 0, -1f, 1f, -aspectRatio, aspectRatio, -1f, 1f);
+        }
     }
 
     @Override
     public void onDrawFrame(GL10 gl10) {
         glClear(GL_COLOR_BUFFER_BIT);
+        glUniformMatrix4fv(uMatrixLocation, 1, false, projectionMatrix, 0);
         glDrawArrays(GL_TRIANGLES,0,6);
-        glDrawArrays(GL_TRIANGLE_FAN,6,6);
-        glDrawArrays(GL_LINES,12,2);
-        glDrawArrays(GL_POINTS,14,1);
-        glDrawArrays(GL_POINTS,15,1);
+        glDrawArrays(GL_TRIANGLE_FAN,6,10);
+        glDrawArrays(GL_LINES,16,2);
+        glDrawArrays(GL_POINTS,18,1);
+        glDrawArrays(GL_POINTS,19,1);
     }
 }
