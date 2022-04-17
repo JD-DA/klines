@@ -2,10 +2,12 @@ package com.example.air_hockey.objects;
 
 
 import static android.opengl.GLES10.glDrawArrays;
+import static javax.microedition.khronos.opengles.GL10.GL_LINES;
 import static javax.microedition.khronos.opengles.GL10.GL_TRIANGLE_FAN;
 import static javax.microedition.khronos.opengles.GL10.GL_TRIANGLE_STRIP;
 
 
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,18 +33,18 @@ class ObjectBuilder {
         }
     }
 
-    static GeneratedData createPuck(Cylinder puck, int numPoints) {
+    static GeneratedData createPiece(Cylinder piece, int numPoints) {
         int size = sizeOfCircleInVertices(numPoints)
                  + sizeOfOpenCylinderInVertices(numPoints);
         
         ObjectBuilder builder = new ObjectBuilder(size);
 
         Circle puckTop = new Circle(
-            puck.center.translateY(puck.height / 2f),
-            puck.radius);
+            piece.center.translateY(piece.height / 2f),
+            piece.radius);
         
         builder.appendCircle(puckTop, numPoints);
-        builder.appendOpenCylinder(puck, numPoints);
+        builder.appendOpenCylinder(piece, numPoints);
 
         return builder.build();
     }
@@ -82,7 +84,14 @@ class ObjectBuilder {
         builder.appendOpenCylinder(handleCylinder, numPoints);
 
         return builder.build();
-    }    
+    }
+
+    static GeneratedData createGrid(int numLines){
+        ObjectBuilder builder = new ObjectBuilder((numLines+1)*4);
+        builder.appendGrid(numLines);
+        return builder.build();
+
+    }
 
     private static int sizeOfCircleInVertices(int numPoints) {
         return 1 + (numPoints + 1);
@@ -168,6 +177,36 @@ class ObjectBuilder {
                 glDrawArrays(GL_TRIANGLE_STRIP, startVertex, numVertices);
             }
         });        
+    }
+
+    private void appendGrid(int numLines){
+        final int startVertex = offset / FLOATS_PER_VERTEX;
+        float startX = -0.5f;
+        float startY = 0.5f;
+        float step = 1.0f/numLines;
+        //lignes
+        for(int i=0;i<=numLines;i++){
+            //Log.d("ShaderHelper", "appendGrid: "+startX+" "+(startY-i*step)+" "+(startX+1.0f)+" "+(startY-i*step));
+            vertexData[offset++] =startX;
+            vertexData[offset++] =startY-i*step;
+            vertexData[offset++] =startX+1.0f;
+            vertexData[offset++] =startY-i*step;
+        }
+        //colonnes
+        for(int i=0;i<=numLines;i++){
+            //Log.d("ShaderHelper", "appendGrid: "+startX+i*step+" "+startY+" "+startX+i*step+" "+(startY-1.0f));
+            vertexData[offset++] =startX+i*step;
+            vertexData[offset++] =startY;
+            vertexData[offset++] =startX+i*step;
+            vertexData[offset++] =startY-1.0f;
+        }
+        drawList.add(new DrawCommand() {
+            @Override
+            public void draw() {
+                glDrawArrays(GL_LINES, startVertex, (numLines+1)*4);
+            }
+        });
+
     }
 
     private GeneratedData build() {

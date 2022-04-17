@@ -10,14 +10,18 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Air_Hockey">
         <activity
-            android:name=".Air_HockeyActivity"
-            android:exported="true"
-            >
+            android:name=".MenuActivity"
+            android:exported="true" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".Air_HockeyActivity"
+            android:exported="true">
+
         </activity>
     </application>
 

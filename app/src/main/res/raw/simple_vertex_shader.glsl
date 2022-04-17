@@ -7,4 +7,5 @@ varying vec4 v_Color;
  {
      gl_Position = u_Matrix*a_Position;
      gl_PointSize = 10.0;
+
  }
