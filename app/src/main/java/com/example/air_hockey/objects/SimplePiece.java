@@ -4,6 +4,8 @@ package com.example.air_hockey.objects;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.example.air_hockey.data.VertexArray;
 import com.example.air_hockey.programs.ColorShaderProgram;
 
@@ -86,5 +88,25 @@ public class SimplePiece {
 
     public Colors getColor() {
         return color;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        if(color==MyColors.RED){
+            return "Red";
+        }else if (color == MyColors.WHITE)
+            return "Whi";
+        else if (color == MyColors.GREEN)
+            return "Green";
+        else if (color == MyColors.BLUE)
+            return "Blu";
+        else if (color == MyColors.CYAN)
+            return "Cya";
+        else if (color == MyColors.PURPLE)
+            return "Pur";
+        else if (color == MyColors.YELLOW)
+            return "Yell";
+        return "Non";
     }
 }

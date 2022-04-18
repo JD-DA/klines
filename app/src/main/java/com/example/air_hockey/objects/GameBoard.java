@@ -4,7 +4,10 @@ package com.example.air_hockey.objects;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 import util.Colors;
 import util.Geometry;
@@ -19,6 +22,9 @@ public class GameBoard {
 
     public GameBoard(int size) {
         filledPosition = new boolean[size*size];
+        for (int i = 0; i < size * size; i++) {
+            filledPosition[i]=false;
+        }
         numLines=size;
         step=1f/size;
 
@@ -35,9 +41,7 @@ public class GameBoard {
 
     // sur le plan x/z x=0 milieu de la table
     public Geometry.Point pointFromIndex(int index) {
-        Log.d(TAG, "pointFromIndex: "+index);
-        Log.d(TAG, "pointFromIndex: "+numLines);
-        Log.d(TAG, "pointFromIndex: "+step);
+
         return new Geometry.Point(index%numLines*step+step/2.0f-0.5f,0f,((int)(index/numLines))*step+step/2.0f-0.5f);
     }
 
@@ -53,33 +57,18 @@ public class GameBoard {
 
     public List<Integer> checkBoard(SimplePiece[] board){
         //check lines
+        Log.d(TAG, "checkBoard: checkLine");
         Colors previousColor = null;
         int score=0;
         int index;
         List<Integer> indexToDestroy = new ArrayList<>();
         List<Integer> indexWeMightDestroy = new ArrayList<>();
         for (int i = 0; i < numLines; i++) {
+            StringBuilder line = new StringBuilder();
             for (int j = 0; j < numLines; j++) {
                 index = i*numLines+j;
-                if(filledPosition[index] && board[index].getColor()==previousColor){
-                    indexWeMightDestroy.add(index);
-                }else {
-                    if(indexWeMightDestroy.size()>=numLines-2){
-                        indexToDestroy.addAll(indexWeMightDestroy);
-                    }
-                    indexWeMightDestroy.clear();
-                    if(filledPosition[index])
-                        previousColor = board[index].getColor();
-                    else
-                        previousColor=null;
-                }
-            }
-
-        }
-        //check columns
-        for (int i = 0; i < numLines; i++) {
-            for (int j = 0; j < numLines; j++) {
-                index = j*numLines+i;
+                line.append(i * numLines + j);
+                line.append("\t");
                 if(filledPosition[index] && board[index].getColor()==previousColor){
                     indexWeMightDestroy.add(index);
                 }else {
@@ -90,10 +79,54 @@ public class GameBoard {
                     if(filledPosition[index]) {
                         previousColor = board[index].getColor();
                         indexWeMightDestroy.add(index);
+                    }
+                    else
+                        previousColor=null;
+                }
+            }
+            if(indexWeMightDestroy.size()>=numLines-2){
+                indexToDestroy.addAll(indexWeMightDestroy);
+            }
+            indexWeMightDestroy.clear();
+            previousColor=null;
+            Log.d(TAG, "checkBoard: "+line);
+
+        }
+        Log.d(TAG, "checkBoard: check columns");
+        //check columns
+        for (int i = 0; i < numLines; i++) {
+            StringBuilder line = new StringBuilder();
+            StringBuilder lineColor = new StringBuilder();
+            for (int j = 0; j < numLines; j++) {
+
+                index = j*numLines+i;
+                line.append(j * numLines + i);
+                line.append("\t");
+                if(board[index]!=null)
+                lineColor.append(board[index].getColor()).append("\t");
+                else
+                    lineColor.append("nul").append("\t");
+                if(filledPosition[index] && board[index].getColor()==previousColor){
+                    indexWeMightDestroy.add(index);
+                }else {
+                    if(indexWeMightDestroy.size()>=4){
+                        indexToDestroy.addAll(indexWeMightDestroy);
+                    }
+                    indexWeMightDestroy.clear();
+                    if(filledPosition[index]) {
+                        previousColor = board[index].getColor();
+                        indexWeMightDestroy.add(index);
                     }else
                         previousColor=null;
                 }
             }
+            if(indexWeMightDestroy.size()>=numLines-2){
+                indexToDestroy.addAll(indexWeMightDestroy);
+            }
+            indexWeMightDestroy.clear();
+            previousColor=null;
+            Log.d(TAG, "checkBoard: "+line);
+            Log.d(TAG, "checkBoard: "+lineColor);
 
         }
         for (Integer i:
@@ -102,4 +135,79 @@ public class GameBoard {
         }
         return indexToDestroy;
     }
+
+    public List<Integer> movementAllowed(int fromIndex, int toIndex){
+        LinkedList<Integer>[] adj = new LinkedList[numLines*numLines];
+        Queue<Integer> queue = new LinkedList<>();
+        Integer[] parent= new Integer[numLines*numLines];
+        parent[toIndex] = -1;
+        queue.add(toIndex);
+        Integer[] indexes={-numLines,1,numLines,-1};
+        boolean[] explored = new boolean[numLines*numLines];
+        for (int i = 0; i < numLines * numLines; i++) {
+            adj[i]=new LinkedList<>();
+            parent[i]=-1;
+            explored[i]=false;
+            for (Integer tab :
+                    indexes) {
+                if(i+tab>=0 && i+tab < numLines*numLines &&     //not out of the bonds of the array
+                        (!filled(i+tab) || i+tab==fromIndex) && //not a filled case or the case where we will move from
+                        ((tab!=1 || (i+tab)%numLines!=0) &&           //if on edge we mustn't add the over edge as neigbhour
+                        (tab!=-1 || (i+tab)%numLines!=numLines-1))    //idem
+                ){
+                    adj[i].add(i+tab);
+                }
+            }
+
+        }
+        explored[toIndex]=true;
+        int node;
+        int neighbour;
+        while(!queue.isEmpty()){
+            node = queue.poll();
+            for (int i = 0; i <adj[node].size(); i++) {
+                neighbour = adj[node].get(i);
+                if(!explored[neighbour]){
+                    queue.add(neighbour);
+                    explored[neighbour]=true;
+                    parent[neighbour]=node;
+                }
+            }
+        }
+        //get back path
+        List<Integer> path = new ArrayList<>();
+        path.add(fromIndex);
+        int rollback = parent[fromIndex];
+        while(rollback!=-1){
+            path.add(rollback);
+            rollback = parent[rollback];
+        }
+        printBoard(parent);
+        return path;
+
+    }
+    public void printBoard(Integer[] path) {
+        for (int i = 0; i < numLines; i++) {
+            String line = "";
+            for (int j = 0; j < numLines; j++) {
+                line+=path[i*numLines+j]+"\t";
+            }
+            Log.d(TAG, "printBoard: "+line);
+        }
+    }
+
+    public boolean[] getFilledPosition() {
+        return filledPosition;
+    }
+
+    public boolean gameOver(){
+        for (Boolean test :
+                filledPosition) {
+            if (!test)
+                return false;
+        }
+        return true;
+    }
 }
+
+

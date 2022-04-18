@@ -4,14 +4,23 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ConfigurationInfo;
 import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
+import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.PopupMenu;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class Air_HockeyActivity extends AppCompatActivity {
@@ -19,6 +28,9 @@ private GLSurfaceView glSurfaceView;
     private boolean rendererSet = false;
 
     Air_Hockey_Renderer airHockeyRenderer ;
+    TextView score;
+    private int scoreCount=0;
+
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,11 +44,16 @@ private GLSurfaceView glSurfaceView;
         numLines = intent.getIntExtra("numLines",7);
         //airHockeyRenderer.setNumLines(numLines);
 
-        airHockeyRenderer = new Air_Hockey_Renderer(this,numLines);
+        airHockeyRenderer = new Air_Hockey_Renderer(this,numLines,this);
 
 
         super.onCreate(savedInstanceState);
-        glSurfaceView = new GLSurfaceView(this);
+        setContentView(R.layout.activity_first_open_glproject);
+        glSurfaceView = findViewById(R.id.idGLsurfaceView);
+        score = findViewById(R.id.textViewScore);
+        score.setText("0");
+
+
         if (supportsEs2) {
 // Request an OpenGL ES 2.0 compatible context.
             glSurfaceView.setEGLContextClientVersion(2);
@@ -84,10 +101,7 @@ private GLSurfaceView glSurfaceView;
         });
 
 
-
-
-
-        setContentView(glSurfaceView);
+        //setContentView(glSurfaceView);
     }
 
     @Override
@@ -105,4 +119,33 @@ private GLSurfaceView glSurfaceView;
     }
 
 
+
+    public void addScore(int score) {
+        scoreCount+=score*10;
+        this.score.setText(Integer.toString(scoreCount));
+    }
+    public void gotoMenu(View view){
+        Intent intent = new Intent(this,MenuActivity.class);
+        startActivity(intent);
+    }
+
+    public void showGameOver(){
+        final Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.game_over_dialogue);
+        dialog.setTitle("Game Over");
+        TextView scoreLabel = dialog.findViewById(R.id.scoreGameOverLabel);
+        scoreLabel.setText("Score : "+scoreCount);
+        dialog.show();
+    }
+
+    public void angryVibration(){
+        Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+// Vibrate for 500 milliseconds
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+        } else {
+            //deprecated in API 26
+            v.vibrate(500);
+        }
+    }
 }
