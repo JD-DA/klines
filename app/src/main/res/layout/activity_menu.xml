@@ -35,12 +35,23 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:width="200dp"
-        android:onClick="goSix"
-        android:text="play 6"
+        android:onClick="goSeven"
+        android:text="Easy"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.502"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/buttonPlay" />
+    <Button
+        android:id="@+id/buttonPlay3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:width="200dp"
+        android:onClick="go9"
+        android:text="Normal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.502"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/buttonPlay2" />
 
     <!--<com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"

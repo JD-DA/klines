@@ -4,7 +4,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
@@ -14,20 +13,16 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
-import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class Air_HockeyActivity extends AppCompatActivity {
+public class KlinesActivity extends AppCompatActivity {
 private GLSurfaceView glSurfaceView;
     private boolean rendererSet = false;
 
-    Air_Hockey_Renderer airHockeyRenderer ;
+    Klines_Renderer airHockeyRenderer ;
     TextView score;
     private int scoreCount=0;
 
@@ -44,7 +39,7 @@ private GLSurfaceView glSurfaceView;
         numLines = intent.getIntExtra("numLines",7);
         //airHockeyRenderer.setNumLines(numLines);
 
-        airHockeyRenderer = new Air_Hockey_Renderer(this,numLines,this);
+        airHockeyRenderer = new Klines_Renderer(this,numLines,this);
 
 
         super.onCreate(savedInstanceState);
@@ -80,14 +75,6 @@ private GLSurfaceView glSurfaceView;
                             @Override
                             public void run() {
                                 airHockeyRenderer.handleTouchPress(
-                                        normalizedX, normalizedY);
-                            }
-                        });
-                    } else if (event.getAction() == MotionEvent.ACTION_MOVE) {
-                        glSurfaceView.queueEvent(new Runnable() {
-                            @Override
-                            public void run() {
-                                airHockeyRenderer.handleTouchDrag(
                                         normalizedX, normalizedY);
                             }
                         });

@@ -22,11 +22,9 @@ import android.util.Log;
 
 import com.example.air_hockey.objects.GameBoard;
 import com.example.air_hockey.objects.Grid;
-import com.example.air_hockey.objects.Mallet;
+import com.example.air_hockey.objects.GridNextPieces;
 import com.example.air_hockey.objects.SimplePiece;
-import com.example.air_hockey.objects.Table;
 import com.example.air_hockey.programs.ColorShaderProgram;
-import com.example.air_hockey.programs.TextureShaderProgram;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -40,9 +38,8 @@ import javax.microedition.khronos.opengles.GL10;
 
 import util.Geometry;
 import util.MatrixHelper;
-import util.TextureHelper;
 
-public class Air_Hockey_Renderer implements GLSurfaceView.Renderer {
+public class Klines_Renderer implements GLSurfaceView.Renderer {
     private static final String TAG = "AirHockeyRenderer";
 
     private final Context context;
@@ -52,20 +49,14 @@ public class Air_Hockey_Renderer implements GLSurfaceView.Renderer {
     private final float[] viewProjectionMatrix = new float[16];
     private final float[] modelViewProjectionMatrix = new float[16];
     private final float[] invertedViewProjectionMatrix = new float[16];
-    private Table table;
-    private Mallet mallet;
-    private TextureShaderProgram textureProgram;
+    private GridNextPieces gridNextPieces;
     private ColorShaderProgram colorProgram;
-    private int texture;
-    private final boolean malletPressed = false;
-    private Geometry.Point blueMalletPosition;
     private final SimplePiece[] board;
     private final GameBoard gameBoard;
     private int score = 0;
     private boolean showed = false;
 
 
-    private SimplePiece simplePiece;
     private Grid grid;
 
     private float x;
@@ -73,34 +64,41 @@ public class Air_Hockey_Renderer implements GLSurfaceView.Renderer {
     private boolean numLinesChanged;
     private int indexToMove = -1;
 
-    private final Air_HockeyActivity theAirHockeyActivity;
+    private final KlinesActivity theAirHockeyActivity;
 
     private boolean moving = false;
     private Queue<Integer> movement;
+    private boolean alreadyFiled = false;
+    SimplePiece[] nextPieces;
 
 
-    public Air_Hockey_Renderer(Context context, int numLines, Air_HockeyActivity air_hockeyActivity) {
+    public Klines_Renderer(Context context, int numLines, KlinesActivity klinesActivity) {
         this.context = context;
         this.gameBoard = new GameBoard(numLines);
         this.numLines = numLines;
         board = new SimplePiece[numLines * numLines];
-        theAirHockeyActivity = air_hockeyActivity;
+        theAirHockeyActivity = klinesActivity;
+        nextPieces = new SimplePiece[3];
+        x=0;
 
     }
 
     @Override
     public void onSurfaceCreated(GL10 gl10, EGLConfig eglConfig) {
+        Log.d(TAG, "onSurfaceCreated: "+x);
 
 
-        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-        table = new Table();
-        mallet = new Mallet(0.08f, 0.15f, 32);
-        simplePiece = new SimplePiece(0.06f, 0.02f, 32, new Geometry.Point(0f, 0f, 0f));
-        textureProgram = new TextureShaderProgram(context);
-        colorProgram = new ColorShaderProgram(context);
-        blueMalletPosition = new Geometry.Point(0f, mallet.height / 2f, 0.4f);
-        grid = new Grid(numLines);
-        fillBoardInitial();
+        if(gridNextPieces==null) {
+            Log.d(TAG, "onSurfaceCreated: ON REFAIT TOUT");
+            glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+            colorProgram = new ColorShaderProgram(context);
+            grid = new Grid(numLines);
+            gridNextPieces = new GridNextPieces();
+            fillBoardInitial();
+        }
+        for (int i = 0; i < 3; i++) {
+            nextPieces[i] = new SimplePiece(1f / ((numLines + 1) * 2), 0.04f, (int) (Math.random() * (10 - 3 + 1) + 3), new Geometry.Point(0f,0f,0f));
+        }
 
         x = 0;
     }
@@ -108,7 +106,7 @@ public class Air_Hockey_Renderer implements GLSurfaceView.Renderer {
     @Override
     public void onSurfaceChanged(GL10 gl10, int width, int height) {
         glViewport(0, 0, width, height);
-        MatrixHelper.perspectiveM(projectionMatrix, 57, (float) width
+        MatrixHelper.perspectiveM(projectionMatrix, 50, (float) width
                 / (float) height, 1f, 10f);
         setLookAtM(viewMatrix, 0, 0f, 1.2f, 2.2f, 0f, 0f, 0f, 0f, 1f, 0f);
 
@@ -116,12 +114,12 @@ public class Air_Hockey_Renderer implements GLSurfaceView.Renderer {
 
     @Override
     public void onDrawFrame(GL10 gl10) {
-        testAll("ondrawFrame");
+        //testAll("ondrawFrame");
         if (numLinesChanged) {
             grid = new Grid(numLines);
             numLinesChanged = false;
         }
-        Log.d(TAG, "onDrawFrame: gameOver"+gameBoard.gameOver());
+        //Log.d(TAG, "onDrawFrame: gameOver"+gameBoard.gameOver());
         if (gameBoard.gameOver() && !showed) {
             moving = true;
             showed = true;
@@ -145,6 +143,8 @@ public class Air_Hockey_Renderer implements GLSurfaceView.Renderer {
         colorProgram.setUniforms(modelViewProjectionMatrix, grid.getColor().getR(), grid.getColor().getG(), grid.getColor().getB());
         grid.bindData(colorProgram);
         grid.draw();
+        gridNextPieces.bindData(colorProgram);
+        gridNextPieces.draw();
 
 
         for (int i = 0; i < numLines * numLines; i++) {
@@ -166,9 +166,24 @@ public class Air_Hockey_Renderer implements GLSurfaceView.Renderer {
                 }
             }
         }
+        //draw the next pieces
+        for (int i = 0; i < 3; i++) {
+            SimplePiece lapiece = nextPieces[i];
+            //Log.d(TAG, "onDrawFrame: "+lapiece);
+            if (lapiece != null) {
+                //Log.d(TAG, "onDrawFrame: "+gridNextPieces.getX()+" "+gridNextPieces.getY());
+                positionObjectInScene(gridNextPieces.getX()+(i+0.5f)*gridNextPieces.getStep(), 0.02f,-gridNextPieces.getY()+0.5f*gridNextPieces.getStep());
+                colorProgram.useProgram();
+                colorProgram.setUniforms(modelViewProjectionMatrix, lapiece.getR(), lapiece.getG(), lapiece.getB());
+                //colorProgram.setUniforms(modelViewProjectionMatrix, 1f, 0.5f, 0.3f);
 
+                lapiece.bindData(colorProgram);
+                lapiece.draw();
+            }
+        }
 
-        //setLookAtM(viewMatrix, 0, 0f, 2.2f-(x++%2500/250), 0f-(x++%2500/250), 0f, 0f, 0f, 0f, 0f, -1f);
+        x++;
+        //setLookAtM(viewMatrix, 0, 0f, 2.2f-(x++%1500/250), 0f-(x++%2500/250), 0f, 0f, 0f, 0f, 0f, -1f);
         setLookAtM(viewMatrix, 0, 0f, 2.2f, 0f, 0f, 0f, 0f, 0f, 0f, -1f);
 
 
@@ -294,7 +309,7 @@ public class Air_Hockey_Renderer implements GLSurfaceView.Renderer {
 
     private void checkResults() {
         testAll("checkresult");
-        createNewPiece();
+        placeNewPiece();
         List<Integer> array = gameBoard.checkBoard(board);
         for (Integer indexToDestroy :
                 array) {
@@ -314,24 +329,24 @@ public class Air_Hockey_Renderer implements GLSurfaceView.Renderer {
 
     }
 
-    private void createNewPiece() {
+    private void placeNewPiece() {
         testAll("createNewPiece");
-        int index = gameBoard.getRandomPosition();
-        Geometry.Point point = gameBoard.pointFromIndex(index);
-        SimplePiece piece = new SimplePiece(1f / ((numLines + 1) * 2), 0.04f, (int) (Math.random() * (10 - 3 + 1) + 3), point);
-        board[index] = piece;
-    }
+        if(!gameBoard.gameOver()){
+            for (int i = 0; i < 3; i++) {
+                SimplePiece lapiece = nextPieces[i];
+                //Log.d(TAG, "onDrawFrame: "+lapiece);
+                if (lapiece != null) {
+                    int index = gameBoard.getRandomPosition();
+                    Geometry.Point point = gameBoard.pointFromIndex(index);
+                    lapiece.setPoint(point);
+                    board[index] = lapiece;
+                } else {
+                    Log.d(TAG, "onDrawFrame: null pointer ?");
+                }
+                nextPieces[i] = new SimplePiece(1f / ((numLines + 1) * 2), 0.04f, (int) (Math.random() * (10 - 3 + 1) + 3), new Geometry.Point(0f,0f,0f));
+            }
 
-    public void handleTouchDrag(float normalizedX, float normalizedY) {
-        /*if (!moving && malletPressed) {
-            Geometry.Ray ray = convertNormalized2DPointToRay(normalizedX, normalizedY);
-// Define a plane representing our air hockey table.
-            Geometry.Plane plane = new Geometry.Plane(new Geometry.Point(0, 0, 0), new Geometry.Vector(0, 1, 0)); // Find out where the touched point intersects the plane
-// representing our table. We'll move the mallet along this plane.
-            Geometry.Point touchedPoint = Geometry.intersectionPoint(ray, plane);
-            blueMalletPosition =
-            new Geometry.Point(touchedPoint.x, mallet.height / 2f, touchedPoint.z);
-        }*/
+        }
     }
 
 
@@ -373,16 +388,19 @@ public class Air_Hockey_Renderer implements GLSurfaceView.Renderer {
     }
 
     public void fillBoardInitial() {
-        testAll("fillBoardInitial");
-        float step = (float) (1.0 / numLines);
+        if(!alreadyFiled) {
+            alreadyFiled=true;
+            testAll("fillBoardInitial");
+            float step = (float) (1.0 / numLines);
 
-        for (int i = 0; i < numLines - 2; i++) {
-            int index = gameBoard.getRandomPosition();
-            Geometry.Point point = gameBoard.pointFromIndex(index);
-            //Log.d(TAG, "fillBoardInitial: "+point.x+" "+point.y+" "+point.z);
-            SimplePiece piece = new SimplePiece(1f / ((numLines + 1) * 2), 0.04f, (int) (Math.random() * (10 - 3 + 1) + 3), point);
-            board[index] = piece;
-            //Log.d(TAG, "fillBoardInitial: filled index : "+index);
+            for (int i = 0; i < numLines - 2; i++) {
+                int index = gameBoard.getRandomPosition();
+                Geometry.Point point = gameBoard.pointFromIndex(index);
+                //Log.d(TAG, "fillBoardInitial: "+point.x+" "+point.y+" "+point.z);
+                SimplePiece piece = new SimplePiece(1f / ((numLines + 1) * 2), 0.04f, (int) (Math.random() * (10 - 3 + 1) + 3), point);
+                board[index] = piece;
+                //Log.d(TAG, "fillBoardInitial: filled index : "+index);
+            }
         }
     }
 

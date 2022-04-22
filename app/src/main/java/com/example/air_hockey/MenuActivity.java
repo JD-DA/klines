@@ -8,8 +8,6 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.material.textfield.TextInputEditText;
-
 public class MenuActivity extends AppCompatActivity {
 
     TextView numLines;
@@ -28,15 +26,20 @@ public class MenuActivity extends AppCompatActivity {
             Toast.makeText(this,"Veuillez indiquer un nombre supérieur ou égal à 6", Toast.LENGTH_LONG).show();
             return;
         }
-        Toast.makeText(this,"combien : "+Integer.toString(nLines), Toast.LENGTH_LONG).show();
-        Intent intent = new Intent(this,Air_HockeyActivity.class);
+        Intent intent = new Intent(this, KlinesActivity.class);
         intent.putExtra("numLines",nLines);
         startActivity(intent);
     }
 
-    public void goSix(View view){
-        int nLines = 6;
-        Intent intent = new Intent(this,Air_HockeyActivity.class);
+    public void goSeven(View view){
+        int nLines = 7;
+        Intent intent = new Intent(this, KlinesActivity.class);
+        intent.putExtra("numLines",nLines);
+        startActivity(intent);
+    }
+    public void go9(View view){
+        int nLines = 9;
+        Intent intent = new Intent(this, KlinesActivity.class);
         intent.putExtra("numLines",nLines);
         startActivity(intent);
     }

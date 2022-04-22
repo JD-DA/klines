@@ -31,6 +31,6 @@
             android:layout_marginTop="15dp"
             android:onClick="gotoMenu"
             android:text="Menu"
-            android:textColor="#FFF" />
+            android:textColor="#000000" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

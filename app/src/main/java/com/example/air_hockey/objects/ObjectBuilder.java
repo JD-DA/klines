@@ -19,6 +19,8 @@ import util.Geometry.*;
 class ObjectBuilder {
     private static final int FLOATS_PER_VERTEX = 3;
 
+
+
     static interface DrawCommand {
         void draw();
     }
@@ -92,6 +94,13 @@ class ObjectBuilder {
         return builder.build();
 
     }
+    public static GeneratedData createGridNextPieces() {
+        ObjectBuilder builder = new ObjectBuilder(12);
+        builder.appendGridNextPieces();
+        return builder.build();
+    }
+
+
 
     private static int sizeOfCircleInVertices(int numPoints) {
         return 1 + (numPoints + 1);
@@ -208,6 +217,37 @@ class ObjectBuilder {
         });
 
     }
+    private void appendGridNextPieces() {
+        final int startVertex = offset / FLOATS_PER_VERTEX;
+        float step = 1.0f/7;
+        float startX = -(step*1.5f);
+        float startY = 0.5f+step*1.5f;
+
+        //lignes
+        for(int i=0;i<=1;i++){
+            //Log.d("ShaderHelper", "appendGrid: "+startX+" "+(startY-i*step)+" "+(startX+1.0f)+" "+(startY-i*step));
+            vertexData[offset++] =startX;
+            vertexData[offset++] =startY-i*step;
+            vertexData[offset++] =startX+step*3;
+            vertexData[offset++] =startY-i*step;
+        }
+        //colonnes
+        for(int i=0;i<=3;i++){
+            //Log.d("ShaderHelper", "appendGrid: "+startX+i*step+" "+startY+" "+startX+i*step+" "+(startY-1.0f));
+            vertexData[offset++] =startX+i*step;
+            vertexData[offset++] =startY;
+            vertexData[offset++] =startX+i*step;
+            vertexData[offset++] =startY-step;
+        }
+        drawList.add(new DrawCommand() {
+            @Override
+            public void draw() {
+                glDrawArrays(GL_LINES, startVertex, 12);
+            }
+        });
+    }
+
+
 
     private GeneratedData build() {
         return new GeneratedData(vertexData, drawList);

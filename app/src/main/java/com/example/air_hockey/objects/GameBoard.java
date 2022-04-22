@@ -19,6 +19,7 @@ public class GameBoard {
     private float step;
 
     private boolean[] filledPosition;
+    private int align;
 
     public GameBoard(int size) {
         filledPosition = new boolean[size*size];
@@ -27,6 +28,10 @@ public class GameBoard {
         }
         numLines=size;
         step=1f/size;
+        if (size<8)
+            align=4;
+        else
+            align=5;
 
     }
 
@@ -64,15 +69,15 @@ public class GameBoard {
         List<Integer> indexToDestroy = new ArrayList<>();
         List<Integer> indexWeMightDestroy = new ArrayList<>();
         for (int i = 0; i < numLines; i++) {
-            StringBuilder line = new StringBuilder();
+            //StringBuilder line = new StringBuilder();
             for (int j = 0; j < numLines; j++) {
                 index = i*numLines+j;
-                line.append(i * numLines + j);
-                line.append("\t");
+                //line.append(i * numLines + j);
+                //line.append("\t");
                 if(filledPosition[index] && board[index].getColor()==previousColor){
                     indexWeMightDestroy.add(index);
                 }else {
-                    if(indexWeMightDestroy.size()>=numLines-2){
+                    if(indexWeMightDestroy.size()>=align){
                         indexToDestroy.addAll(indexWeMightDestroy);
                     }
                     indexWeMightDestroy.clear();
@@ -84,12 +89,12 @@ public class GameBoard {
                         previousColor=null;
                 }
             }
-            if(indexWeMightDestroy.size()>=numLines-2){
+            if(indexWeMightDestroy.size()>=align){
                 indexToDestroy.addAll(indexWeMightDestroy);
             }
             indexWeMightDestroy.clear();
             previousColor=null;
-            Log.d(TAG, "checkBoard: "+line);
+            //Log.d(TAG, "checkBoard: "+line);
 
         }
         Log.d(TAG, "checkBoard: check columns");
@@ -109,7 +114,7 @@ public class GameBoard {
                 if(filledPosition[index] && board[index].getColor()==previousColor){
                     indexWeMightDestroy.add(index);
                 }else {
-                    if(indexWeMightDestroy.size()>=4){
+                    if(indexWeMightDestroy.size()>=align){
                         indexToDestroy.addAll(indexWeMightDestroy);
                     }
                     indexWeMightDestroy.clear();
@@ -120,7 +125,7 @@ public class GameBoard {
                         previousColor=null;
                 }
             }
-            if(indexWeMightDestroy.size()>=numLines-2){
+            if(indexWeMightDestroy.size()>=align){
                 indexToDestroy.addAll(indexWeMightDestroy);
             }
             indexWeMightDestroy.clear();
