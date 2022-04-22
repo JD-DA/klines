@@ -58,37 +58,29 @@ private GLSurfaceView glSurfaceView;
         } else {
             Toast.makeText(this, "This device does not support OpenGL ES 2.0.", Toast.LENGTH_LONG).show();
             return; }
-        glSurfaceView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (event != null) {
-                    // Convert touch coordinates into normalized device
-                    // coordinates, keeping in mind that Android's Y
-                    // coordinates are inverted.
-                    final float normalizedX =
-                            (event.getX() / (float) v.getWidth()) * 2 - 1;
-                    final float normalizedY =
-                            -((event.getY() / (float) v.getHeight()) * 2 - 1);
+        glSurfaceView.setOnTouchListener((v, event) -> {
+            if (event != null) {
+                final float normalizedX =
+                        (event.getX() / (float) v.getWidth()) * 2 - 1;
+                final float normalizedY =
+                        -((event.getY() / (float) v.getHeight()) * 2 - 1);
 
-                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                        glSurfaceView.queueEvent(new Runnable() {
-                            @Override
-                            public void run() {
-                                airHockeyRenderer.handleTouchPress(
-                                        normalizedX, normalizedY);
-                            }
-                        });
-                    }
-
-                    return true;
-                } else {
-                    return false;
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    glSurfaceView.queueEvent(new Runnable() {
+                        @Override
+                        public void run() {
+                            airHockeyRenderer.handleTouchPress(
+                                    normalizedX, normalizedY);
+                        }
+                    });
                 }
+
+                return true;
+            } else {
+                return false;
             }
         });
 
-
-        //setContentView(glSurfaceView);
     }
 
     @Override

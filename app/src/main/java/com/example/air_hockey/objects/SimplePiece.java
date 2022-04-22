@@ -24,9 +24,8 @@ public class SimplePiece {
     private final VertexArray vertexArray;
     private final List<ObjectBuilder.DrawCommand> drawList;
 
-    private int x;
-    private int y;
-    private int numPoints;
+
+    private final int numPoints;
     private Geometry.Point point;
     private Colors color;
 
@@ -40,8 +39,6 @@ public class SimplePiece {
         this.numPoints = numPointsAroundPuck;
         color = MyColors.colorRange[(int)(Math.random()*7)];
         //Log.d(TAG, "SimplePiece: "+r+" "+g+" "+b);
-
-
 
         vertexArray = new VertexArray(generatedData.vertexData);
         drawList = generatedData.drawList;
@@ -62,9 +59,6 @@ public class SimplePiece {
         return point;
     }
 
-    public int getNumPoints() {
-        return numPoints;
-    }
 
     public float getR() {
         return color.getR();
@@ -78,9 +72,6 @@ public class SimplePiece {
         return color.getB();
     }
 
-    public void changeColor(){
-        color = MyColors.colorRange[(int)(Math.random()*7)];
-    }
 
     public void setPoint(Geometry.Point point) {
         this.point = point;

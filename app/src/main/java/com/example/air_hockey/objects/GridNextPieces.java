@@ -9,12 +9,11 @@ import util.Colors;
 import util.MyColors;
 
 public class GridNextPieces {
+    //the 3x1 grid holding the pieces to be placed on the next move
     private static final int POSITION_COMPONENT_COUNT = 2;
-    private static final int BYTES_PER_FLOAT = 4;
 
     private final VertexArray vertexArray;
     private final List<ObjectBuilder.DrawCommand> drawList;
-    private int numLines;
     private Colors color;
 
     public GridNextPieces() {

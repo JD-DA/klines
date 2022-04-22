@@ -1,10 +1,7 @@
 package com.example.air_hockey.objects;
-import static android.opengl.GLES20.GL_TRIANGLE_FAN;
-import static android.opengl.GLES20.glDrawArrays;
 
 import com.example.air_hockey.data.VertexArray;
 import com.example.air_hockey.programs.ColorShaderProgram;
-import com.example.air_hockey.programs.TextureShaderProgram;
 
 import java.util.List;
 
@@ -21,6 +18,7 @@ public class Grid {
     private Colors color;
 
     public Grid(int size) {
+        //call the builder to create the array of vertexes
         ObjectBuilder.GeneratedData generatedData = ObjectBuilder.createGrid(size);
         vertexArray = new VertexArray(generatedData.vertexData);
         drawList = generatedData.drawList;

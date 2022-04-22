@@ -8,6 +8,11 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
+/*
+Class mostly inspired from the book "OpenGL ES 2 for android" by Kevin Brothaler
+It creates and holds the floatBuffer.
+ */
+
 public class VertexArray {
     private static final int BYTES_PER_FLOAT = 4;
     private final FloatBuffer floatBuffer;

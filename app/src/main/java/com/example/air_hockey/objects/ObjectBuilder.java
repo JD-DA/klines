@@ -21,12 +21,14 @@ class ObjectBuilder {
 
 
 
-    static interface DrawCommand {
+    interface DrawCommand {
         void draw();
     }
 
     static class GeneratedData {
+        //coordinates
         final float[] vertexData;
+        //list of draw actions (draw triangles, then draw lines...) for the same object related to the coordinates
         final List<DrawCommand> drawList;
 
         GeneratedData(float[] vertexData, List<DrawCommand> drawList) {
@@ -35,55 +37,20 @@ class ObjectBuilder {
         }
     }
 
+    /////// Object creations
+
     static GeneratedData createPiece(Cylinder piece, int numPoints) {
         int size = sizeOfCircleInVertices(numPoints)
                  + sizeOfOpenCylinderInVertices(numPoints);
         
         ObjectBuilder builder = new ObjectBuilder(size);
 
-        Circle puckTop = new Circle(
+        Circle pieceTop = new Circle(
             piece.center.translateY(piece.height / 2f),
             piece.radius);
         
-        builder.appendCircle(puckTop, numPoints);
+        builder.appendCircle(pieceTop, numPoints);
         builder.appendOpenCylinder(piece, numPoints);
-
-        return builder.build();
-    }
-    
-    static GeneratedData createMallet(
-        Point center, float radius, float height, int numPoints) {
-        int size = sizeOfCircleInVertices(numPoints) * 2
-                 + sizeOfOpenCylinderInVertices(numPoints) * 2;
-        
-        ObjectBuilder builder = new ObjectBuilder(size);                                      
-        
-        // First, generate the mallet base.
-        float baseHeight = height * 0.25f;
-        
-        Circle baseCircle = new Circle(
-            center.translateY(-baseHeight), 
-            radius);
-        Cylinder baseCylinder = new Cylinder(
-            baseCircle.center.translateY(-baseHeight / 2f), 
-            radius, baseHeight);
-
-        builder.appendCircle(baseCircle, numPoints);
-        builder.appendOpenCylinder(baseCylinder, numPoints);
-                
-        // Now generate the mallet handle.
-        float handleHeight = height * 0.75f;
-        float handleRadius = radius / 3f;
-        
-        Circle handleCircle = new Circle(
-            center.translateY(height * 0.5f), 
-            handleRadius);        
-        Cylinder handleCylinder = new Cylinder(
-            handleCircle.center.translateY(-handleHeight / 2f),
-            handleRadius, handleHeight);                
-
-        builder.appendCircle(handleCircle, numPoints);
-        builder.appendOpenCylinder(handleCylinder, numPoints);
 
         return builder.build();
     }
@@ -118,17 +85,17 @@ class ObjectBuilder {
         vertexData = new float[sizeInVertices * FLOATS_PER_VERTEX];
     }
 
+    //// Geometric objects creations
+
     private void appendCircle(Circle circle, int numPoints) {
         final int startVertex = offset / FLOATS_PER_VERTEX;
         final int numVertices = sizeOfCircleInVertices(numPoints);
 
-        // Center point of fan
         vertexData[offset++] = circle.center.x;
         vertexData[offset++] = circle.center.y;
         vertexData[offset++] = circle.center.z;
 
-        // Fan around center point. <= is used because we want to generate
-        // the point at the starting angle twice to complete the fan.
+
         for (int i = 0; i <= numPoints; i++) {
             float angleInRadians = 
                   ((float) i / (float) numPoints)
@@ -142,12 +109,7 @@ class ObjectBuilder {
                     (float) (circle.center.z
                                     + circle.radius * Math.sin(angleInRadians));
         }
-        drawList.add(new DrawCommand() {
-            @Override
-            public void draw() {
-                glDrawArrays(GL_TRIANGLE_FAN, startVertex, numVertices);
-            }
-        });
+        drawList.add(() -> glDrawArrays(GL_TRIANGLE_FAN, startVertex, numVertices));
     }
 
     private void appendOpenCylinder(Cylinder cylinder, int numPoints) {
@@ -156,9 +118,6 @@ class ObjectBuilder {
         final float yStart = cylinder.center.y - (cylinder.height / 2f);
         final float yEnd = cylinder.center.y + (cylinder.height / 2f);
 
-        // Generate strip around center point. <= is used because we want to
-        // generate the points at the starting angle twice, to complete the
-        // strip.
         for (int i = 0; i <= numPoints; i++) {
             float angleInRadians = 
                   ((float) i / (float) numPoints)
@@ -180,12 +139,7 @@ class ObjectBuilder {
             vertexData[offset++] = yEnd;
             vertexData[offset++] = zPosition;
         }
-        drawList.add(new DrawCommand() {
-            @Override
-            public void draw() {
-                glDrawArrays(GL_TRIANGLE_STRIP, startVertex, numVertices);
-            }
-        });        
+        drawList.add(() -> glDrawArrays(GL_TRIANGLE_STRIP, startVertex, numVertices));
     }
 
     private void appendGrid(int numLines){
@@ -193,7 +147,7 @@ class ObjectBuilder {
         float startX = -0.5f;
         float startY = 0.5f;
         float step = 1.0f/numLines;
-        //lignes
+        //lines
         for(int i=0;i<=numLines;i++){
             //Log.d("ShaderHelper", "appendGrid: "+startX+" "+(startY-i*step)+" "+(startX+1.0f)+" "+(startY-i*step));
             vertexData[offset++] =startX;
@@ -201,7 +155,7 @@ class ObjectBuilder {
             vertexData[offset++] =startX+1.0f;
             vertexData[offset++] =startY-i*step;
         }
-        //colonnes
+        //colones
         for(int i=0;i<=numLines;i++){
             //Log.d("ShaderHelper", "appendGrid: "+startX+i*step+" "+startY+" "+startX+i*step+" "+(startY-1.0f));
             vertexData[offset++] =startX+i*step;
@@ -209,12 +163,7 @@ class ObjectBuilder {
             vertexData[offset++] =startX+i*step;
             vertexData[offset++] =startY-1.0f;
         }
-        drawList.add(new DrawCommand() {
-            @Override
-            public void draw() {
-                glDrawArrays(GL_LINES, startVertex, (numLines+1)*4);
-            }
-        });
+        drawList.add(() -> glDrawArrays(GL_LINES, startVertex, (numLines+1)*4));
 
     }
     private void appendGridNextPieces() {
@@ -239,12 +188,7 @@ class ObjectBuilder {
             vertexData[offset++] =startX+i*step;
             vertexData[offset++] =startY-step;
         }
-        drawList.add(new DrawCommand() {
-            @Override
-            public void draw() {
-                glDrawArrays(GL_LINES, startVertex, 12);
-            }
-        });
+        drawList.add(() -> glDrawArrays(GL_LINES, startVertex, 12));
     }
 
 

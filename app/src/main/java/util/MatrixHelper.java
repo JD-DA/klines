@@ -1,6 +1,8 @@
 
 package util;
-
+/*
+Class mostly inspired from the book "OpenGL ES 2 for android" by Kevin Brothaler
+ */
 public class MatrixHelper {
     public static void perspectiveM(float[] m, float yFovInDegrees, float aspect,
         float n, float f) {

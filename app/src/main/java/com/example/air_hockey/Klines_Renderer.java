@@ -54,21 +54,31 @@ public class Klines_Renderer implements GLSurfaceView.Renderer {
     private final SimplePiece[] board;
     private final GameBoard gameBoard;
     private int score = 0;
+    //used to do nothing at the end of the game and not display multiple times the dialogue box
     private boolean showed = false;
 
 
     private Grid grid;
 
+    //used for moving the camera
     private float x;
+
+    //number of lines for the grid
     private int numLines;
-    private boolean numLinesChanged;
+
+    //index of the piece that we touched and that we want to move
     private int indexToMove = -1;
 
     private final KlinesActivity theAirHockeyActivity;
 
+    //when a piece is moving this help us to forbid any other touch action, just wait and watch it move
     private boolean moving = false;
+    //the indexes that the moving piece is gonna have to pass by during its journey
     private Queue<Integer> movement;
+
+    //boolean tested for when we change the screen orientation, not successful :(
     private boolean alreadyFiled = false;
+    //the array holding the pieces that we will places during the next round
     SimplePiece[] nextPieces;
 
 
@@ -87,7 +97,7 @@ public class Klines_Renderer implements GLSurfaceView.Renderer {
     public void onSurfaceCreated(GL10 gl10, EGLConfig eglConfig) {
         Log.d(TAG, "onSurfaceCreated: "+x);
 
-
+        //attempt to not redo everything when screen is rotated
         if(gridNextPieces==null) {
             Log.d(TAG, "onSurfaceCreated: ON REFAIT TOUT");
             glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -115,38 +125,31 @@ public class Klines_Renderer implements GLSurfaceView.Renderer {
     @Override
     public void onDrawFrame(GL10 gl10) {
         //testAll("ondrawFrame");
-        if (numLinesChanged) {
-            grid = new Grid(numLines);
-            numLinesChanged = false;
-        }
+
         //Log.d(TAG, "onDrawFrame: gameOver"+gameBoard.gameOver());
         if (gameBoard.gameOver() && !showed) {
             moving = true;
             showed = true;
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                @Override
-                public void run() {
-                    theAirHockeyActivity.showGameOver();
-                }
-            });
+            new Handler(Looper.getMainLooper()).post(theAirHockeyActivity::showGameOver);
         }
 
 
-        // Clear the rendering surface.
+
         glClear(GL_COLOR_BUFFER_BIT);
         // Draw the table.
         multiplyMM(viewProjectionMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
         invertM(invertedViewProjectionMatrix, 0, viewProjectionMatrix, 0);
 
         glLineWidth(2);
-        positionTableInScene();
+        positionGridInScene();
         colorProgram.setUniforms(modelViewProjectionMatrix, grid.getColor().getR(), grid.getColor().getG(), grid.getColor().getB());
         grid.bindData(colorProgram);
         grid.draw();
+
         gridNextPieces.bindData(colorProgram);
         gridNextPieces.draw();
 
-
+        //draw all the pieces
         for (int i = 0; i < numLines * numLines; i++) {
             if (gameBoard.filled(i)) {
                 //Log.d(TAG, "onDrawFrame: try to get : "+i);
@@ -157,16 +160,16 @@ public class Klines_Renderer implements GLSurfaceView.Renderer {
                     positionObjectInScene(point.x, point.y + 0.02f, point.z);
                     colorProgram.useProgram();
                     colorProgram.setUniforms(modelViewProjectionMatrix, lapiece.getR(), lapiece.getG(), lapiece.getB());
-                    //colorProgram.setUniforms(modelViewProjectionMatrix, 1f, 0.5f, 0.3f);
-
                     lapiece.bindData(colorProgram);
                     lapiece.draw();
                 } else {
-                    Log.d(TAG, "onDrawFrame: null pointer ?");
+                    Log.d(TAG, "onDrawFrame: null pointer !?");
+                    //this is where the main issue was with the null pointer, even though it wasn't supposed to happen
+                    //probably due to the interruption of the thread execution by the onDraw.
                 }
             }
         }
-        //draw the next pieces
+        //draw the 3 next pieces
         for (int i = 0; i < 3; i++) {
             SimplePiece lapiece = nextPieces[i];
             //Log.d(TAG, "onDrawFrame: "+lapiece);
@@ -175,28 +178,28 @@ public class Klines_Renderer implements GLSurfaceView.Renderer {
                 positionObjectInScene(gridNextPieces.getX()+(i+0.5f)*gridNextPieces.getStep(), 0.02f,-gridNextPieces.getY()+0.5f*gridNextPieces.getStep());
                 colorProgram.useProgram();
                 colorProgram.setUniforms(modelViewProjectionMatrix, lapiece.getR(), lapiece.getG(), lapiece.getB());
-                //colorProgram.setUniforms(modelViewProjectionMatrix, 1f, 0.5f, 0.3f);
-
                 lapiece.bindData(colorProgram);
                 lapiece.draw();
             }
         }
 
         x++;
+        //Uncomment for weird camera movement (but funny), used to see where the pieces were.
         //setLookAtM(viewMatrix, 0, 0f, 2.2f-(x++%1500/250), 0f-(x++%2500/250), 0f, 0f, 0f, 0f, 0f, -1f);
         setLookAtM(viewMatrix, 0, 0f, 2.2f, 0f, 0f, 0f, 0f, 0f, 0f, -1f);
 
 
     }
 
-    private void positionTableInScene() {
-// The table is defined in terms of X & Y coordinates, so we rotate it // 90 degrees to lie flat on the XZ plane.
+    private void positionGridInScene() {
+// The grid is defined in terms of X & Y coordinates, so we rotate it // 90 degrees to lie flat on the XZ plane.
         setIdentityM(modelMatrix, 0);
         rotateM(modelMatrix, 0, -90f, 1f, 0f, 0f);
         multiplyMM(modelViewProjectionMatrix, 0, viewProjectionMatrix, 0, modelMatrix, 0);
     }
 
     private void positionObjectInScene(float x, float y, float z) {
+        //Used to position objects in the scene
         setIdentityM(modelMatrix, 0);
         translateM(modelMatrix, 0, x, y, z);
         multiplyMM(modelViewProjectionMatrix, 0, viewProjectionMatrix,
@@ -204,36 +207,41 @@ public class Klines_Renderer implements GLSurfaceView.Renderer {
     }
 
     public void handleTouchPress(float normalizedX, float normalizedY) {
-        testAll("handleTouch");
+        //testAll("handleTouch");
         if (moving) {
             return;
         }
         Geometry.Ray ray = convertNormalized2DPointToRay(normalizedX, normalizedY);
-// Now test if this ray intersects with the mallet by creating a // bounding sphere that wraps the mallet.
+// Now test if this ray intersects with the mallet by creating a
+// bounding sphere that wraps the piece.
         for (int i = 0; i < numLines * numLines; i++) {
             SimplePiece piece = board[i];
             //Log.d(TAG, "handleTouchPress: test sur "+i+" "+piece);
             if (piece != null) {
+                //we touch a piece
 
                 Geometry.Sphere malletBoundingSphere = new Geometry.Sphere(piece.getPoint(),
                         piece.radius);
-// If the ray intersects (if the user touched a part of the screen that // intersects the mallet's bounding sphere), then set malletPressed = // true.
                 if (Geometry.intersects(malletBoundingSphere, ray)) {
                     //Log.d(TAG, "handleTouchPress: on touche une piece "+i);
-                    //piece.changeColor();
                     indexToMove = i;
                     break;
                 }
             } else {
+                // maybe we touch an empty case of the canvas ?
                 Geometry.Point touchedPoint = gameBoard.pointFromIndex(i);
                 Geometry.Sphere malletBoundingSphere = new Geometry.Sphere(touchedPoint,
                         1f / (numLines * 2));
                 if (Geometry.intersects(malletBoundingSphere, ray) && indexToMove != -1) {
+                    //test if the movement is allowed, BFS
                     List<Integer> path = gameBoard.movementAllowed(indexToMove, i);
+                    /*
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                         Log.d(TAG, "handleTouchPress path : " + path.stream().map(String::valueOf).collect(Collectors.joining(",")));
                     }
+                    */
                     if (path.size() > 1) {
+                        //It's allowed, we have path !
                         movement = new LinkedList<>();
                         movement.addAll(path);
                         movement.poll();
@@ -243,13 +251,9 @@ public class Klines_Renderer implements GLSurfaceView.Renderer {
                     } else {
                         Log.d(TAG, "handleTouchPress: FORBIDEN MOVE");
                         grid.turnRed();
-
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
-                            @Override
-                            public void run() {
-                                theAirHockeyActivity.angryVibration();
-                            }
-                        });
+                        //to communicate with the activity we use a runnable to be launched in the main thread
+                        new Handler(Looper.getMainLooper()).post(theAirHockeyActivity::angryVibration);
+                        //blinking effect
                         new Timer().schedule(new TimerTask() {
                             @Override
                             public void run() {
@@ -277,12 +281,14 @@ public class Klines_Renderer implements GLSurfaceView.Renderer {
         }
 
     }
-
+    //sort of recursive method that will proceed to do one movement then schedule the new call for
+    // movement a few milliseconds later if there is still a movement to do
     private void proceedMovement() {
         testAll("proceedMovement");
         if (!movement.isEmpty()) {
             int i = movement.poll();
             Log.d(TAG, "proceedMovement: from " + indexToMove + " to " + i);
+            //we move the piece
             SimplePiece pieceToMove = board[indexToMove];
             board[i] = pieceToMove;
             pieceToMove.setPoint(gameBoard.pointFromIndex(i));
@@ -301,15 +307,22 @@ public class Klines_Renderer implements GLSurfaceView.Renderer {
             }, 125);
 
         } else {
+            //then at the end we check the result
             checkResults();
             printBoard();
             printGameBoard();
         }
     }
 
+    /*
+    Checks the result and creates the 3 new pieces
+     */
     private void checkResults() {
+
         testAll("checkresult");
         placeNewPiece();
+        //return the indexes of the piece that we need to destroy
+        //it is possible that the new pieces randomly complete a line
         List<Integer> array = gameBoard.checkBoard(board);
         for (Integer indexToDestroy :
                 array) {
@@ -320,12 +333,7 @@ public class Klines_Renderer implements GLSurfaceView.Renderer {
         moving = false;
         indexToMove = -1;
 
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                theAirHockeyActivity.addScore(score);
-            }
-        });
+        new Handler(Looper.getMainLooper()).post(() -> theAirHockeyActivity.addScore(score));
 
     }
 
@@ -333,17 +341,22 @@ public class Klines_Renderer implements GLSurfaceView.Renderer {
         testAll("createNewPiece");
         if(!gameBoard.gameOver()){
             for (int i = 0; i < 3; i++) {
-                SimplePiece lapiece = nextPieces[i];
-                //Log.d(TAG, "onDrawFrame: "+lapiece);
-                if (lapiece != null) {
-                    int index = gameBoard.getRandomPosition();
-                    Geometry.Point point = gameBoard.pointFromIndex(index);
-                    lapiece.setPoint(point);
-                    board[index] = lapiece;
-                } else {
-                    Log.d(TAG, "onDrawFrame: null pointer ?");
+                if(!gameBoard.gameOver()) {
+                    SimplePiece lapiece = nextPieces[i];
+                    //Log.d(TAG, "onDrawFrame: "+lapiece);
+                    if (lapiece != null) {
+                        //we look for a random position
+                        int index = gameBoard.getRandomPosition();
+                        Geometry.Point point = gameBoard.pointFromIndex(index);
+                        //we place it
+                        lapiece.setPoint(point);
+                        board[index] = lapiece;
+                    } else {
+                        Log.d(TAG, "onDrawFrame: null pointer ?");
+                    }
+                    //we create a new random piece for the nextGrid
+                    nextPieces[i] = new SimplePiece(1f / ((numLines + 1) * 2), 0.04f, (int) (Math.random() * (10 - 3 + 1) + 3), new Geometry.Point(0f, 0f, 0f));
                 }
-                nextPieces[i] = new SimplePiece(1f / ((numLines + 1) * 2), 0.04f, (int) (Math.random() * (10 - 3 + 1) + 3), new Geometry.Point(0f,0f,0f));
             }
 
         }
@@ -352,6 +365,7 @@ public class Klines_Renderer implements GLSurfaceView.Renderer {
 
     private Geometry.Ray convertNormalized2DPointToRay(
             float normalizedX, float normalizedY) {
+        //Method mostly inspired from the book "OpenGL ES 2 for android" by Kevin Brothaler
 // We'll convert these normalized device coordinates into world-space
 // coordinates. We'll pick a point on the near and far planes, and draw a
 // line between them. To do this transform, we need to first multiply by
@@ -375,18 +389,15 @@ public class Klines_Renderer implements GLSurfaceView.Renderer {
     }
 
     private void divideByW(float[] vector) {
+        //Class mostly inspired from the book "OpenGL ES 2 for android" by Kevin Brothaler
         vector[0] /= vector[3];
         vector[1] /= vector[3];
         vector[2] /= vector[3];
     }
 
-
-    public void setNumLines(int numLines) {
-        //Log.d(TAG, "setNumLines: "+numLines);
-        this.numLines = numLines;
-        this.numLinesChanged = true;
-    }
-
+/*
+Initial method used to create the first pieces of the board
+ */
     public void fillBoardInitial() {
         if(!alreadyFiled) {
             alreadyFiled=true;
@@ -403,14 +414,14 @@ public class Klines_Renderer implements GLSurfaceView.Renderer {
             }
         }
     }
-
+//used for debug
     private void printBoard() {
         Log.d(TAG, "printBoard: ///////////////////////////////");
         for (int i = 0; i < numLines; i++) {
             StringBuilder line = new StringBuilder();
             for (int j = 0; j < numLines; j++) {
                 if (board[i * numLines + j] != null)
-                    line.append(board[i * numLines + j].toString() + "\t");
+                    line.append(board[i * numLines + j].toString()).append("\t");
                 else
                     line.append(" null\t");
 
@@ -424,7 +435,7 @@ public class Klines_Renderer implements GLSurfaceView.Renderer {
         for (int i = 0; i < numLines; i++) {
             StringBuilder line = new StringBuilder();
             for (int j = 0; j < numLines; j++) {
-                line.append(gameBoard.getFilledPosition()[i * numLines + j] + "\t");
+                line.append(gameBoard.getFilledPosition()[i * numLines + j]).append("\t");
             }
             Log.d(TAG, "printBoard: " + line);
         }
@@ -432,7 +443,7 @@ public class Klines_Renderer implements GLSurfaceView.Renderer {
         for (int i = 0; i < numLines; i++) {
             StringBuilder line = new StringBuilder();
             for (int j = 0; j < numLines; j++) {
-                line.append((i * numLines + j) + "\t");
+                line.append(i * numLines + j).append("\t");
             }
             Log.d(TAG, "printBoard: " + line);
         }

@@ -4,7 +4,6 @@ package com.example.air_hockey.objects;
 import android.util.Log;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -13,13 +12,15 @@ import util.Colors;
 import util.Geometry;
 
 public class GameBoard {
+    //keep in memory the state of our board, i.e. the filled position and provide methods to
+    // convert from index view to the array view
 
     private static final String TAG = "GameBoard";
-    private int numLines;
-    private float step;
+    private final int numLines;
+    private final float step;
 
-    private boolean[] filledPosition;
-    private int align;
+    private final boolean[] filledPosition;
+    private final int align;
 
     public GameBoard(int size) {
         filledPosition = new boolean[size*size];
@@ -44,36 +45,37 @@ public class GameBoard {
         return index;
     }
 
-    // sur le plan x/z x=0 milieu de la table
+    /*
+    return the point from the provided index according to the dimension of the grid
+     */
     public Geometry.Point pointFromIndex(int index) {
 
-        return new Geometry.Point(index%numLines*step+step/2.0f-0.5f,0f,((int)(index/numLines))*step+step/2.0f-0.5f);
+        return new Geometry.Point(index%numLines*step+step/2.0f-0.5f,0f, (index/numLines) *step+step/2.0f-0.5f);
     }
 
 
+    // if position filled return true
     public boolean filled(int i) {
         return filledPosition[i];
     }
+
 
     public void moveFromTo(int indexToMove, int i) {
         filledPosition[indexToMove]=false;
         filledPosition[i]=true;
     }
 
+    //check the board and return the position of the pieces that must be deleted because they are aligned
     public List<Integer> checkBoard(SimplePiece[] board){
         //check lines
         Log.d(TAG, "checkBoard: checkLine");
         Colors previousColor = null;
-        int score=0;
         int index;
         List<Integer> indexToDestroy = new ArrayList<>();
         List<Integer> indexWeMightDestroy = new ArrayList<>();
         for (int i = 0; i < numLines; i++) {
-            //StringBuilder line = new StringBuilder();
             for (int j = 0; j < numLines; j++) {
                 index = i*numLines+j;
-                //line.append(i * numLines + j);
-                //line.append("\t");
                 if(filledPosition[index] && board[index].getColor()==previousColor){
                     indexWeMightDestroy.add(index);
                 }else {
@@ -94,23 +96,24 @@ public class GameBoard {
             }
             indexWeMightDestroy.clear();
             previousColor=null;
-            //Log.d(TAG, "checkBoard: "+line);
 
         }
         Log.d(TAG, "checkBoard: check columns");
         //check columns
         for (int i = 0; i < numLines; i++) {
-            StringBuilder line = new StringBuilder();
-            StringBuilder lineColor = new StringBuilder();
+            //StringBuilder line = new StringBuilder();
+            //StringBuilder lineColor = new StringBuilder();
             for (int j = 0; j < numLines; j++) {
 
                 index = j*numLines+i;
-                line.append(j * numLines + i);
+                /*line.append(j * numLines + i);
                 line.append("\t");
                 if(board[index]!=null)
                 lineColor.append(board[index].getColor()).append("\t");
                 else
                     lineColor.append("nul").append("\t");
+
+                 */
                 if(filledPosition[index] && board[index].getColor()==previousColor){
                     indexWeMightDestroy.add(index);
                 }else {
@@ -130,8 +133,8 @@ public class GameBoard {
             }
             indexWeMightDestroy.clear();
             previousColor=null;
-            Log.d(TAG, "checkBoard: "+line);
-            Log.d(TAG, "checkBoard: "+lineColor);
+            /*Log.d(TAG, "checkBoard: "+line);
+            Log.d(TAG, "checkBoard: "+lineColor);*/
 
         }
         for (Integer i:
@@ -141,6 +144,9 @@ public class GameBoard {
         return indexToDestroy;
     }
 
+    /*
+    create the graph based on the grid and apply a BFS on it, then we try to find a path between our two points
+     */
     public List<Integer> movementAllowed(int fromIndex, int toIndex){
         LinkedList<Integer>[] adj = new LinkedList[numLines*numLines];
         Queue<Integer> queue = new LinkedList<>();
@@ -193,9 +199,9 @@ public class GameBoard {
     }
     public void printBoard(Integer[] path) {
         for (int i = 0; i < numLines; i++) {
-            String line = "";
+            StringBuilder line = new StringBuilder();
             for (int j = 0; j < numLines; j++) {
-                line+=path[i*numLines+j]+"\t";
+                line.append(path[i * numLines + j]).append("\t");
             }
             Log.d(TAG, "printBoard: "+line);
         }
@@ -205,6 +211,7 @@ public class GameBoard {
         return filledPosition;
     }
 
+    //check if the board is filled
     public boolean gameOver(){
         for (Boolean test :
                 filledPosition) {
