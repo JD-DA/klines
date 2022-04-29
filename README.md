@@ -15,7 +15,7 @@ Il y a trois modes disponibles :
 - Facile : Grille 7×7 avec des alignements de 4 pièces.
 - Normal : Grille de 9×9 avec des alignements de 5 pièces.
 - Personnalisé : Grille de taille minimal 6 et maximal... ce que l'appareil peut supporter.
-  ![tablet](./images/tabletView.png "grille de 20x20 sur une tablette")
+  ![tablet](./images/tabletView.png "grille de 25x25 sur une tablette")
   
 - Lors d'un game over on affiche le score et on retourne au menu principal.
 

@@ -1,7 +1,9 @@
-package com.example.klines.objects;
+package com.example.klines;
 
 
 import android.util.Log;
+
+import com.example.klines.objects.SimplePiece;
 
 import java.util.ArrayList;
 import java.util.LinkedList;

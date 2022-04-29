@@ -19,7 +19,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
-import com.example.klines.objects.GameBoard;
 import com.example.klines.objects.Grid;
 import com.example.klines.objects.GridNextPieces;
 import com.example.klines.objects.SimplePiece;
