@@ -21,7 +21,7 @@ import static android.opengl.GLES20.glValidateProgram;
 
 import android.util.Log;
 /*
-Class mostly inspired from the book "OpenGL ES 2 for android" by Kevin Brothaler
+Class inspired from the book "OpenGL ES 2 for android" by Kevin Brothaler
  */
 public class ShaderHelper {
     private static final String TAG = "ShaderHelper";

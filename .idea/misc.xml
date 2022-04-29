@@ -4,6 +4,7 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="app/src/main/res/layout/activity_first_open_glproject.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/activity_game.xml" value="0.14791666666666667" />
         <entry key="app/src/main/res/layout/activity_menu.xml" value="0.25" />
         <entry key="app/src/main/res/layout/game_over_dialogue.xml" value="0.1" />
         <entry key="app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.2916666666666667" />

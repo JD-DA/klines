@@ -43,7 +43,7 @@ private GLSurfaceView glSurfaceView;
 
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_first_open_glproject);
+        setContentView(R.layout.activity_game);
         glSurfaceView = findViewById(R.id.idGLsurfaceView);
         score = findViewById(R.id.textViewScore);
         score.setText("0");

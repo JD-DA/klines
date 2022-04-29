@@ -363,7 +363,7 @@ public class Klines_Renderer implements GLSurfaceView.Renderer {
 
     private Geometry.Ray convertNormalized2DPointToRay(
             float normalizedX, float normalizedY) {
-        //Method mostly inspired from the book "OpenGL ES 2 for android" by Kevin Brothaler
+        //Method inspired from the book "OpenGL ES 2 for android" by Kevin Brothaler
 // We'll convert these normalized device coordinates into world-space
 // coordinates. We'll pick a point on the near and far planes, and draw a
 // line between them. To do this transform, we need to first multiply by
@@ -387,7 +387,7 @@ public class Klines_Renderer implements GLSurfaceView.Renderer {
     }
 
     private void divideByW(float[] vector) {
-        //Class mostly inspired from the book "OpenGL ES 2 for android" by Kevin Brothaler
+        //Class inspired from the book "OpenGL ES 2 for android" by Kevin Brothaler
         vector[0] /= vector[3];
         vector[1] /= vector[3];
         vector[2] /= vector[3];
