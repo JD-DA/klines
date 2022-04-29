@@ -182,9 +182,13 @@ public class Klines_Renderer implements GLSurfaceView.Renderer {
         }
 
         x++;
-        //Uncomment for weird camera movement (but funny), used to see where the pieces were.
+        //Uncomment for funny camera movement, used to see where the pieces were if not on the grid
         //setLookAtM(viewMatrix, 0, 0f, 2.2f-(x++%1500/250), 0f-(x++%2500/250), 0f, 0f, 0f, 0f, 0f, -1f);
+
         setLookAtM(viewMatrix, 0, 0f, 2.2f, 0f, 0f, 0f, 0f, 0f, 0f, -1f);
+
+        //uncomment for 3D projection
+        //setLookAtM(viewMatrix, 0, 0f, 2.2f, 2f, 0f, 0f, 0f, 0f, 0f, -1f);
 
 
     }
